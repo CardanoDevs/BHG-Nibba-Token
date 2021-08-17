@@ -1,5 +1,7 @@
 Name of Coin – $NIBBA – Nibba Inu 
+
 Total Supply – 10,000,000,000,000
+
 Decimal Places - 8
 
 List of Wallets
