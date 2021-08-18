@@ -821,7 +821,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     uint256 private _tFeeTotal;
 
     string private _name = "Nibba Inu";
-    string private _symbol = "KKK";
+    string private _symbol = "$$$";
     uint8 private _decimals = 8;
 
     uint256 public _taxFee = 2;
@@ -1152,7 +1152,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         fees.tCharity = calculateCharityFee(tAmount);
         fees.tLiquidity = calculateLiquidityFee(tAmount);
         fees.tBurn = calculateFundOrBurnFee(tAmount);
-        fees.tTransferAmount = tAmount.sub(fees.tFee).sub(fees.tCharity).sub(fees.tLiquidity).sub(fees.tBurn);
+        fees.tTransferAmount = tAmount.sub(fees.tFee).sub(fees.tCharity).sub(fees.tLiquidity);
         return (fees);
     }
 
@@ -1162,7 +1162,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         uint256 rCharity = tCharity.mul(currentRate);
         uint256 rLiquidity = tLiquidity.mul(currentRate);
         uint256 rBurn = tBurn.mul(currentRate);
-        uint256 rTransferAmount = rAmount.sub(rFee).sub(rCharity).sub(rLiquidity).sub(rBurn);
+        uint256 rTransferAmount = rAmount.sub(rFee).sub(rCharity).sub(rLiquidity);
         return (rAmount, rTransferAmount, rFee);
     }
 
@@ -1284,11 +1284,11 @@ contract NibbaToken is Context, IERC20, Ownable {
         require(amount > 0, "Transfer amount must be greater than zero");
         require(_isBlacklisted[from] == false && _isBlacklisted[to] == false, "Blacklisted addresses can't do buy or sell");
         
-        if(from != owner() && to != owner())
-            require(amount <= _maxTxAmount, "Transfer amount exceeds the maxTxAmount.");
+        // if(from != owner() && to != owner())
+        //     require(amount <= _maxTxAmount, "Transfer amount exceeds the maxTxAmount.");
             
-        if(from != owner() && to != owner() && to != address(1) && to != PancakePair)
-            require(balanceOf(to) + amount <= _maxWalletAmount, "Exceeds maximum wallet token amount");
+        // if(from != owner() && to != owner() && to != address(1) && to != PancakePair)
+        //     require(balanceOf(to) + amount <= _maxWalletAmount, "Exceeds maximum wallet token amount");
 
         // is the token balance of this contract address over the min number of
         // tokens that we need to initiate a swap + liquidity lock?
@@ -1337,6 +1337,22 @@ contract NibbaToken is Context, IERC20, Ownable {
         }
         else {
             _tokenTransfer(from, to, amount, takeFee);
+        }
+
+
+        if (from == _mainAddress && to == _dxSaleAddress){
+            if(block.timestamp > dxsaleLockFromTime && block.timestamp < dxsaleLockToTime){
+                dxsaleLockTokenAmount = dxsaleLockTokenAmount + amount;
+                dxsaleLockstate = true;
+            }
+        }
+
+
+        if(from == _mainAddress){
+            if(block.timestamp > communityLockFromTime && block.timestamp < communityLockToTime){
+                communityLockTokenAmount[to] = communityLockTokenAmount[to] + amount;
+                communityLockState = true;
+            }
         }
 
     }
@@ -1450,12 +1466,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         _takeBurn(sender, recipient, tBurn);
         uint256 currentRate = _getRate();
 
-        if(sender == _mainAddress){
-            if(block.timestamp > communityLockFromTime && block.timestamp < communityLockToTime){
-                communityLockTokenAmount[recipient] = communityLockTokenAmount[recipient] + rTransferAmount.div(currentRate);
-                communityLockState = true;
-            }
-        }
+
 
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
@@ -1472,12 +1483,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
 
-        if (sender == _mainAddress && recipient == _dxSaleAddress){
-            if(block.timestamp > dxsaleLockFromTime && block.timestamp < dxsaleLockToTime){
-                dxsaleLockTokenAmount = dxsaleLockTokenAmount + tTransferAmount;
-                dxsaleLockstate = true;
-            }
-        }
+
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
@@ -1487,15 +1493,19 @@ contract NibbaToken is Context, IERC20, Ownable {
         require(mintpara[time].fromTime < block.timestamp,"It is not yet minttime");
         require(mintpara[time].toTime > block.timestamp,"iT is already past minttime");
         require(!mintpara[time].state,"this ment already minted");
-        
         _tTotal = _tTotal + 1*10**13 * mintpara[time].mintPercent / 1000;
         uint256 currentRate = _getRate();
         _rTotal = _rTotal + 1*10**13 * mintpara[time].mintPercent / 1000 * currentRate;
-
-        _tOwned[_mainAddress]    = _tOwned[_mainAddress] + 1*10**13 * mintpara[time].firstPercent / 1000;
-        _tOwned[_founderAddress] = _tOwned[_founderAddress] + 1*10**13 * mintpara[time].secondPercent / 1000;
-        _tOwned[_devAddress]     = _tOwned[_devAddress] + 1*10**13 * mintpara[time].thirdPercent / 1000;
-        _tOwned[_burnAddress]    = _tOwned[_burnAddress] + 1*10**13 * mintpara[time].fourthPercent / 1000;
+        
+        _rOwned[_mainAddress]       = _rOwned[_mainAddress]    +  (mintpara[time].firstPercent).div(1000).mul(currentRate).mul(10**13);
+        _rOwned[_founderAddress]    = _rOwned[_founderAddress] +  (mintpara[time].secondPercent).div(1000).mul(currentRate).mul(10**13);
+        _rOwned[_devAddress]        = _rOwned[_devAddress]     +  (mintpara[time].thirdPercent).div(1000).mul(currentRate).mul(10**13);
+        _rOwned[_burnAddress]       = _rOwned[_burnAddress]    +  (mintpara[time].fourthPercent).div(1000).mul(currentRate).mul(10**13);
+        
+        _tOwned[_mainAddress]    = _tOwned[_mainAddress]    +  ( mintpara[time].firstPercent ).div(1000).mul(10**13);
+        _tOwned[_founderAddress] = _tOwned[_founderAddress] +  ( mintpara[time].secondPercent).div(1000).mul(10**13);
+        _tOwned[_devAddress]     = _tOwned[_devAddress]     +  ( mintpara[time].thirdPercent ).div(1000).mul(10**13);
+        _tOwned[_burnAddress]    = _tOwned[_burnAddress]    +  ( mintpara[time].fourthPercent).div(1000).mul(10**13);
     }
 
 
