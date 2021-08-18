@@ -805,12 +805,12 @@ contract NibbaToken is Context, IERC20, Ownable {
     address[] private _excluded;
 
 
-    address private _mainAddress = 0xA7482C9c5926E88d85804A969c383730Ce100639;
-    address private _charityAddress = 0xA7482C9c5926E88d85804A969c383730Ce100639;
+    address private _mainAddress = 0x60Adc35AF15fD227C77e56fCE291694A1519CbC5;
+    address private _charityAddress = 0xB1053122aF7aa7054faF5f4D8BcA3F1262D7E5Aa;
     address private _founderAddress = 0x85D117cD3C10a44f26896ebbB84C4181D051fD08;
     address private _devAddress = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
-    address private _burnAddress = 0x85D117cD3C10a44f26896ebbB84C4181D051fD08;
-    address private _lpAddress = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
+    address private _burnAddress = 0x25c811A00264893945f6efc20EE01f89BD496bcc;
+    address private _lpAddress = 0x0262006Bd7aE0E696172c09573FaD1B9dC3aA8e0;
     address private _dxSaleAddress = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
 
 
@@ -821,7 +821,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     uint256 private _tFeeTotal;
 
     string private _name = "Nibba Inu";
-    string private _symbol = "$NIBBA";
+    string private _symbol = "KKK";
     uint8 private _decimals = 8;
 
     uint256 public _taxFee = 2;
@@ -870,7 +870,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         uint256 tTransferAmount;
         uint256 tFee;
         uint256 tBurn;
-        uint256 tDev;
+        uint256 tCharity;
         uint256 tLiquidity;
     }
     
@@ -1106,7 +1106,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         _burnFee = fundorBurnFee;
     }
     
-    function setDevFeePercent(uint256 devFee) external onlyOwner {
+    function setCharityFeePercent(uint256 devFee) external onlyOwner {
         _charityFee = devFee;
     }
 
@@ -1141,28 +1141,28 @@ contract NibbaToken is Context, IERC20, Ownable {
 
     function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256) {
         (Fees memory fees) = _getTValues(tAmount);
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, fees.tFee, fees.tDev, fees.tLiquidity, fees.tBurn, _getRate());
-        return (rAmount, rTransferAmount, rFee, fees.tTransferAmount, fees.tFee, fees.tDev, fees.tLiquidity, fees.tBurn);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, fees.tFee, fees.tCharity, fees.tLiquidity, fees.tBurn, _getRate());
+        return (rAmount, rTransferAmount, rFee, fees.tTransferAmount, fees.tFee, fees.tCharity, fees.tLiquidity, fees.tBurn);
     }
 
     function _getTValues(uint256 tAmount) private view returns (Fees memory) {
         Fees memory fees;
         
         fees.tFee = calculateTaxFee(tAmount);
-        fees.tDev = calculateDevFee(tAmount);
+        fees.tCharity = calculateCharityFee(tAmount);
         fees.tLiquidity = calculateLiquidityFee(tAmount);
         fees.tBurn = calculateFundOrBurnFee(tAmount);
-        fees.tTransferAmount = tAmount.sub(fees.tFee).sub(fees.tDev).sub(fees.tLiquidity).sub(fees.tBurn);
+        fees.tTransferAmount = tAmount.sub(fees.tFee).sub(fees.tCharity).sub(fees.tLiquidity).sub(fees.tBurn);
         return (fees);
     }
 
-    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tDev, uint256 tLiquidity, uint256 tBurn, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
+    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 tBurn, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
         uint256 rAmount = tAmount.mul(currentRate);
         uint256 rFee = tFee.mul(currentRate);
-        uint256 rDev = tDev.mul(currentRate);
+        uint256 rCharity = tCharity.mul(currentRate);
         uint256 rLiquidity = tLiquidity.mul(currentRate);
         uint256 rBurn = tBurn.mul(currentRate);
-        uint256 rTransferAmount = rAmount.sub(rFee).sub(rDev).sub(rLiquidity).sub(rBurn);
+        uint256 rTransferAmount = rAmount.sub(rFee).sub(rCharity).sub(rLiquidity).sub(rBurn);
         return (rAmount, rTransferAmount, rFee);
     }
 
@@ -1192,9 +1192,12 @@ contract NibbaToken is Context, IERC20, Ownable {
     }
 
     function _takeBurn(address sender, address recipient, uint256 tBurn) private {
+
+        uint256 currentRate =  _getRate();
+        uint256 rBurn = tBurn.mul(currentRate);
+        _rOwned[_burnAddress] = _rOwned[_burnAddress].sub(rBurn);
         
         if(_isExcludedFromFee[sender] || _isExcludedFromFee[recipient]){
-
             _tTotal = _tTotal - tBurn;  
             _tOwned[_burnAddress] = _tOwned[_burnAddress].sub(tBurn);
             _maxTxAmount = _tTotal.mul(_maxTxPercent).div(10**2);
@@ -1203,12 +1206,12 @@ contract NibbaToken is Context, IERC20, Ownable {
 
     }
     
-    function _takeDev(uint256 tDev) private {
+    function _takeCharity(uint256 tCharity) private {
         uint256 currentRate =  _getRate();
-        uint256 rDev = tDev.mul(currentRate);
-        _rOwned[_mainAddress] = _rOwned[_mainAddress].add(rDev);
+        uint256 rCharity = tCharity.mul(currentRate);
+        _rOwned[_charityAddress] = _rOwned[_charityAddress].add(rCharity);
         if(_isExcluded[_charityAddress])
-            _tOwned[_charityAddress] = _tOwned[_charityAddress].add(tDev);
+            _tOwned[_charityAddress] = _tOwned[_charityAddress].add(tCharity);
     }
     
     function TransferBnbToExternalAddress(address recipient, uint256 amount) private {
@@ -1219,7 +1222,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         return _amount.mul(_taxFee).div(10**2);
     }
     
-    function calculateDevFee(uint256 _amount) private view returns (uint256) {
+    function calculateCharityFee(uint256 _amount) private view returns (uint256) {
         return _amount.mul(_charityFee).div(10**2);
     }
     function calculateFundOrBurnFee(uint256 _amount) private view returns (uint256) {
@@ -1414,36 +1417,36 @@ contract NibbaToken is Context, IERC20, Ownable {
     }
 
     function _transferStandard(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tDev, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
         _takeLiquidity(tLiquidity);
-        _takeDev(tDev);
+        _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
     function _transferToExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tDev, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
         _takeLiquidity(tLiquidity);
-        _takeDev(tDev);
+        _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
     function _transferFromExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tDev, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
         
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
         _takeLiquidity(tLiquidity);
-        _takeDev(tDev);
+        _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
         uint256 currentRate = _getRate();
 
@@ -1460,13 +1463,13 @@ contract NibbaToken is Context, IERC20, Ownable {
     }
     
     function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tDev, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 tBurn) = _getValues(tAmount);
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
         _takeLiquidity(tLiquidity);
-        _takeDev(tDev);
+        _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
 
         if (sender == _mainAddress && recipient == _dxSaleAddress){
