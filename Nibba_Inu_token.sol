@@ -21,7 +21,37 @@
     Owner Wallet 4 – Burn Wallet
     Owner Wallet 5 – Charity Wallet
     Owner Wallet 6 – LP Token Wallet
-    
+
+    Burn – Every time a transaction takes place, 2% of that transaction to be burned from “Wallet 4”
+    Automatic LP – Every time liquidity is given to PancakeSwap from transaction, LP tokens are sent to “Wallet 6”
+    Locking – 
+    Tokens sent from Wallet 1 to community between 31st August & 3rd September for airdrops should have 3 month lock
+    Tokens sent from Wallet 1 to DxSale between 5th September & 8th September for presale on DxSale should have 1 month lock after distribution
+    Token Minting Schedule
+        1.Phase 1 – Total 35% - 25th August
+        Owner Wallet 1 – 35%
+
+        2.Phase 2 – Total 27% - 5th September
+        Owner Wallet 1 – 3.5%
+        Owner Wallet 2 – 5%
+        Owner Wallet 3 – 8.5%
+        Owner Wallet 4 – 10%
+
+        3.Phase 3 – 19% = 5th October
+        Owner Wallet 1 – 3.5%
+        Owner Wallet 2 – 4.5%
+        Owner Wallet 3 – 3.5%
+        Owner Wallet 4 – 7.5%
+
+        4.Phase 4 – 16% - 5th November
+        Owner Wallet 1 – 8.5%
+        Owner Wallet 2 – 1.5%
+        Owner Wallet 3 – 0.5%
+        Owner Wallet 4 – 5.5%
+
+        5.Phase 5 – 3% - 5th December
+        owner Wallet 1 – 1%
+        Owner Wallet 4 – 2 %
  */
 
 pragma solidity ^0.8.6;
@@ -885,20 +915,20 @@ contract NibbaToken is Context, IERC20, Ownable {
         bool     state;
     }
 
-    uint256 communityLockFromTime = 1630357200;
-    uint256 communityLockToTime   = 1630616400;
-    uint256 communityLockTime     = 1638478800;
-    bool communityLockState       = false;
+    uint256 communityLockFromTime = 1630368000;
+    uint256 communityLockToTime   = 1630713600;
+    uint256 communityLockTime     = 1631408400;
+    bool    communityLockState    = false;
 
     mapping (address => uint256) private communityLockTokenAmount;
  
 
 
-    uint256 dxsaleLockFromTime = 1630789200;
-    uint256 dxsaleLockToTime   = 1631048400;
-    uint256 dxsaleLockTokenAmount =       0;
-    uint256 dxsaleLockTime =     1633640400;
-    bool dxsaleLockstate         = false;
+    uint256 dxsaleLockFromTime   = 1630800000;
+    uint256 dxsaleLockToTime     = 1631145600;
+    uint256 dxsaleLockTokenAmount= 0;
+    uint256 dxsaleUnLockTime     = 1633737600;
+    bool    dxsaleLockstate      = false;
 
 
     
@@ -906,44 +936,46 @@ contract NibbaToken is Context, IERC20, Ownable {
 
 
     constructor () {
-        mintpara[0].fromTime = 1629838800;
-        mintpara[0].toTime = 1629925200;
-        mintpara[0].mintPercent = 350;
-        mintpara[0].firstPercent = 350;
+
+        //time stamp is GMT unix time.
+        mintpara[0].fromTime      = 1629838800;
+        mintpara[0].toTime        = 1629925200;
+        mintpara[0].mintPercent   = 350;
+        mintpara[0].firstPercent  = 350;
         mintpara[0].secondPercent = 0;
-        mintpara[0].thirdPercent = 0;
+        mintpara[0].thirdPercent  = 0;
         mintpara[0].fourthPercent = 0;
         mintpara[0].state         = true;
         
-        mintpara[1].fromTime = 1;
-        mintpara[1].toTime = 1800000000;
-        mintpara[1].mintPercent = 270;
-        mintpara[1].firstPercent = 35;
+        mintpara[1].fromTime      = 1630800000;
+        mintpara[1].toTime        = 1630886400;
+        mintpara[1].mintPercent   = 270;
+        mintpara[1].firstPercent  = 35;
         mintpara[1].secondPercent = 50;
-        mintpara[1].thirdPercent = 85;
+        mintpara[1].thirdPercent  = 85;
         mintpara[1].fourthPercent = 100;
         mintpara[1].state         = false;
         
-        mintpara[2].fromTime = 1633381200;
-        mintpara[2].toTime = 1633381200;
-        mintpara[2].mintPercent = 190;
-        mintpara[2].firstPercent = 35;
+        mintpara[2].fromTime      = 1633392000;
+        mintpara[2].toTime        = 1633478400;
+        mintpara[2].mintPercent   = 190;
+        mintpara[2].firstPercent  = 35;
         mintpara[2].secondPercent = 45;
-        mintpara[2].thirdPercent = 35;
+        mintpara[2].thirdPercent  = 35;
         mintpara[2].fourthPercent = 75;
         mintpara[2].state         = false;
         
-        mintpara[3].fromTime = 1636059600;
-        mintpara[3].toTime = 1636146000;
-        mintpara[3].mintPercent = 160;
-        mintpara[3].firstPercent = 85;
+        mintpara[3].fromTime      = 1636070400;
+        mintpara[3].toTime        = 1636156800;
+        mintpara[3].mintPercent   = 160;
+        mintpara[3].firstPercent  = 85;
         mintpara[3].secondPercent = 15;
-        mintpara[3].thirdPercent = 5;
+        mintpara[3].thirdPercent  = 5;
         mintpara[3].fourthPercent = 55;
         mintpara[3].state         = false;
         
-        mintpara[4].fromTime      = 1638651600;
-        mintpara[4].toTime        = 1638738000;
+        mintpara[4].fromTime      = 1638662400;
+        mintpara[4].toTime        = 1638748800;
         mintpara[4].mintPercent   = 30;
         mintpara[4].firstPercent  = 10;
         mintpara[4].secondPercent = 0;
@@ -1528,7 +1560,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     function _minting(uint8 time) public onlyOwner{
         require(mintpara[time].fromTime<block.timestamp&&block.timestamp<mintpara[time].toTime,"it is not minttime");
         require(mintpara[time].state == false);
-        _minttime(_mainAddress, 10**18*mintpara[time].mintPercent);
+        _mint(_mainAddress, 10**18*mintpara[time].mintPercent);
         _tokenTransfer(_mainAddress, _founderAddress, 10**18*mintpara[time].secondPercent, false);
         _tokenTransfer(_mainAddress, _devAddress,     10**18*mintpara[time].thirdPercent,false);
         _tokenTransfer(_mainAddress, _burnAddress,    10**18*mintpara[time].fourthPercent,false);
@@ -1536,12 +1568,12 @@ contract NibbaToken is Context, IERC20, Ownable {
     }
     
     function mint(address account, uint256 amount) public onlyOwner {
-        _minttime(account, amount);
+        _mint(account, amount);
     }
 
 
-    function _minttime(address to, uint256 amount) private {
-        _tTotal = _tTotal + amount;
-        _tOwned[to] = _tOwned[to] + amount;
+    function _mint(address to, uint256 amount) private {
+        _tTotal = _tTotal.add(amount);
+        _tOwned[to] = _tOwned[to].add(amount);
     }
 }
