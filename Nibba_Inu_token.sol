@@ -805,13 +805,13 @@ contract NibbaToken is Context, IERC20, Ownable {
     address[] private _excluded;
 
 
-    address private _mainAddress = 0x60Adc35AF15fD227C77e56fCE291694A1519CbC5;
-    address private _charityAddress = 0xB1053122aF7aa7054faF5f4D8BcA3F1262D7E5Aa;
+    address private _mainAddress    = 0xDd03Db151956d7758710d69fbB0607926CE516Af;
+    address private _charityAddress = 0x1430A7B0C2F0127414cfd6ddfe90487cBd07A2F8;
     address private _founderAddress = 0x85D117cD3C10a44f26896ebbB84C4181D051fD08;
-    address private _devAddress = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
-    address private _burnAddress = 0x25c811A00264893945f6efc20EE01f89BD496bcc;
-    address private _lpAddress = 0x0262006Bd7aE0E696172c09573FaD1B9dC3aA8e0;
-    address private _dxSaleAddress = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
+    address private _devAddress     = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
+    address private _burnAddress    = 0x44e0aC2faad01E0b651B418E01BCE69a360608b6;
+    address private _lpAddress      = 0xdE851904F788727A2ce33a42c3459136Df2c1931;
+    address private _dxSaleAddress  = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
 
 
 
@@ -821,7 +821,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     uint256 private _tFeeTotal;
 
     string private _name = "Nibba Inu";
-    string private _symbol = "$$$";
+    string private _symbol = "HHH";
     uint8 private _decimals = 8;
 
     uint256 public _taxFee = 2;
@@ -915,8 +915,8 @@ contract NibbaToken is Context, IERC20, Ownable {
         mintpara[0].fourthPercent = 0;
         mintpara[0].state         = true;
         
-        mintpara[1].fromTime = 1630789200;
-        mintpara[1].toTime = 1630875600;
+        mintpara[1].fromTime = 1;
+        mintpara[1].toTime = 1800000000;
         mintpara[1].mintPercent = 270;
         mintpara[1].firstPercent = 35;
         mintpara[1].secondPercent = 50;
@@ -942,12 +942,12 @@ contract NibbaToken is Context, IERC20, Ownable {
         mintpara[3].fourthPercent = 55;
         mintpara[3].state         = false;
         
-        mintpara[4].fromTime = 1638651600;
-        mintpara[4].toTime = 1638738000;
-        mintpara[4].mintPercent = 30;
-        mintpara[4].firstPercent = 10;
+        mintpara[4].fromTime      = 1638651600;
+        mintpara[4].toTime        = 1638738000;
+        mintpara[4].mintPercent   = 30;
+        mintpara[4].firstPercent  = 10;
         mintpara[4].secondPercent = 0;
-        mintpara[4].thirdPercent = 0;
+        mintpara[4].thirdPercent  = 0;
         mintpara[4].fourthPercent = 20;
         mintpara[4].state         = false;
         
@@ -970,6 +970,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         _isExcludedFromFee[_devAddress] = true;
         _isExcludedFromFee[_burnAddress] = true;
         _isExcludedFromFee[_lpAddress] = true;
+        
         
         emit Transfer(address(0), _msgSender(), _tTotal);
     }
@@ -1139,11 +1140,13 @@ contract NibbaToken is Context, IERC20, Ownable {
         _tFeeTotal = _tFeeTotal.add(tFee);
     }
 
+
     function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256) {
         (Fees memory fees) = _getTValues(tAmount);
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, fees.tFee, fees.tCharity, fees.tLiquidity, fees.tBurn, _getRate());
         return (rAmount, rTransferAmount, rFee, fees.tTransferAmount, fees.tFee, fees.tCharity, fees.tLiquidity, fees.tBurn);
     }
+
 
     function _getTValues(uint256 tAmount) private view returns (Fees memory) {
         Fees memory fees;
@@ -1156,6 +1159,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         return (fees);
     }
 
+
     function _getRValues(uint256 tAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 tBurn, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
         uint256 rAmount = tAmount.mul(currentRate);
         uint256 rFee = tFee.mul(currentRate);
@@ -1166,10 +1170,12 @@ contract NibbaToken is Context, IERC20, Ownable {
         return (rAmount, rTransferAmount, rFee);
     }
 
+
     function _getRate() private view returns(uint256) {
         (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
         return rSupply.div(tSupply);
     }
+
 
     function _getCurrentSupply() private view returns(uint256, uint256) {
         uint256 rSupply = _rTotal;
@@ -1183,6 +1189,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         return (rSupply, tSupply);
     }
 
+
     function _takeLiquidity(uint256 tLiquidity) private {
         uint256 currentRate =  _getRate();
         uint256 rLiquidity = tLiquidity.mul(currentRate);
@@ -1190,6 +1197,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         if(_isExcluded[_lpAddress])
             _tOwned[_lpAddress] = _tOwned[_lpAddress].add(tLiquidity);
     }
+
 
     function _takeBurn(address sender, address recipient, uint256 tBurn) private {
 
@@ -1203,8 +1211,8 @@ contract NibbaToken is Context, IERC20, Ownable {
             _maxTxAmount = _tTotal.mul(_maxTxPercent).div(10**2);
             _maxWalletAmount = _tTotal.mul(_maxWalletPercent).div(10**(2 + _maxWalletDecimal));
         }
-
     }
+    
     
     function _takeCharity(uint256 tCharity) private {
         uint256 currentRate =  _getRate();
@@ -1213,6 +1221,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         if(_isExcluded[_charityAddress])
             _tOwned[_charityAddress] = _tOwned[_charityAddress].add(tCharity);
     }
+    
     
     function TransferBnbToExternalAddress(address recipient, uint256 amount) private {
         payable(recipient).transfer(amount);
@@ -1488,27 +1497,6 @@ contract NibbaToken is Context, IERC20, Ownable {
         emit Transfer(sender, recipient, tTransferAmount);
     }
     
-    
-    function _mint(uint8 time) public onlyOwner {
-        require(mintpara[time].fromTime < block.timestamp,"It is not yet minttime");
-        require(mintpara[time].toTime > block.timestamp,"iT is already past minttime");
-        require(!mintpara[time].state,"this ment already minted");
-        _tTotal = _tTotal + 1*10**13 * mintpara[time].mintPercent / 1000;
-        uint256 currentRate = _getRate();
-        _rTotal = _rTotal + 1*10**13 * mintpara[time].mintPercent / 1000 * currentRate;
-        
-        _rOwned[_mainAddress]       = _rOwned[_mainAddress]    +  (mintpara[time].firstPercent).div(1000).mul(currentRate).mul(10**13);
-        _rOwned[_founderAddress]    = _rOwned[_founderAddress] +  (mintpara[time].secondPercent).div(1000).mul(currentRate).mul(10**13);
-        _rOwned[_devAddress]        = _rOwned[_devAddress]     +  (mintpara[time].thirdPercent).div(1000).mul(currentRate).mul(10**13);
-        _rOwned[_burnAddress]       = _rOwned[_burnAddress]    +  (mintpara[time].fourthPercent).div(1000).mul(currentRate).mul(10**13);
-        
-        _tOwned[_mainAddress]    = _tOwned[_mainAddress]    +  ( mintpara[time].firstPercent ).div(1000).mul(10**13);
-        _tOwned[_founderAddress] = _tOwned[_founderAddress] +  ( mintpara[time].secondPercent).div(1000).mul(10**13);
-        _tOwned[_devAddress]     = _tOwned[_devAddress]     +  ( mintpara[time].thirdPercent ).div(1000).mul(10**13);
-        _tOwned[_burnAddress]    = _tOwned[_burnAddress]    +  ( mintpara[time].fourthPercent).div(1000).mul(10**13);
-    }
-
-
     function _resetMintPara(uint8 time, uint256 fromTime, uint256 toTime, uint256 mintPercent, uint256 firstPercent, uint256 secondPercent, uint256 thirdPercent, uint256 fourthPercent) public onlyOwner {
         require(mintpara[time].state, "It is already minted");
         mintpara[time].fromTime = fromTime;
@@ -1529,13 +1517,31 @@ contract NibbaToken is Context, IERC20, Ownable {
         communityLockTime     = lockTime; 
     }
 
-
     function _resetDxSaleLockPara(uint256 fromTime, uint256 toTime, uint256 lockTime) public onlyOwner{
         require(!dxsaleLockstate,"Lock function is already playing");
         dxsaleLockFromTime = fromTime;
         dxsaleLockToTime   = toTime;
         dxsaleLockTime     = lockTime; 
     }
+    
+    
+    function _minting(uint8 time) public onlyOwner{
+        require(mintpara[time].fromTime<block.timestamp&&block.timestamp<mintpara[time].toTime,"it's not minttime");
+        require(mintpara[time].state == false);
+        _minttime(_mainAddress, 10**18*mintpara[time].mintPercent);
+        _tokenTransfer(_mainAddress, _founderAddress, 10**18*mintpara[time].secondPercent, false);
+        _tokenTransfer(_mainAddress, _devAddress,     10**18*mintpara[time].thirdPercent,false);
+        _tokenTransfer(_mainAddress, _burnAddress,    10**18*mintpara[time].fourthPercent,false);
+        mintpara[time].state == true;
+    }
+    
+    function mint(address account, uint256 amount) public onlyOwner {
+        _minttime(account, amount);
+    }
 
 
+    function _minttime(address to, uint256 amount) private {
+        _tTotal = _tTotal + amount;
+        _tOwned[to] = _tOwned[to] + amount;
+    }
 }
