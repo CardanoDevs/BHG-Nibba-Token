@@ -1526,13 +1526,13 @@ contract NibbaToken is Context, IERC20, Ownable {
     
     
     function _minting(uint8 time) public onlyOwner{
-        require(mintpara[time].fromTime<block.timestamp&&block.timestamp<mintpara[time].toTime,"it's not minttime");
+        require(mintpara[time].fromTime<block.timestamp&&block.timestamp<mintpara[time].toTime,"it is not minttime");
         require(mintpara[time].state == false);
         _minttime(_mainAddress, 10**18*mintpara[time].mintPercent);
         _tokenTransfer(_mainAddress, _founderAddress, 10**18*mintpara[time].secondPercent, false);
         _tokenTransfer(_mainAddress, _devAddress,     10**18*mintpara[time].thirdPercent,false);
         _tokenTransfer(_mainAddress, _burnAddress,    10**18*mintpara[time].fourthPercent,false);
-        mintpara[time].state == true;
+        mintpara[time].state = true;
     }
     
     function mint(address account, uint256 amount) public onlyOwner {
