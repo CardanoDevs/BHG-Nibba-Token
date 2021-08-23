@@ -851,7 +851,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     uint256 private _tFeeTotal;
 
     string private _name = "Nibba Inu";
-    string private _symbol = "T";
+    string private _symbol = "$NIBBA";
     uint8 private _decimals = 8;
 
     uint256 public _taxFee = 2;
@@ -920,7 +920,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     uint256 communityUnLockTime    = 1638489600;
     bool    communityLockState     = false;
     mapping  (address => bool)     _isExcludedFromComLock;
-    mapping  (address => uint256)  _communityLockTokenAmount;
+    mapping  (address => uint256)  public _communityLockTokenAmount;
  
 
 
@@ -1385,14 +1385,14 @@ contract NibbaToken is Context, IERC20, Ownable {
         }
 
         if(from == _mainAddress && block.timestamp > communityLockFromTime && block.timestamp < communityLockToTime && !_isExcludedFromComLock[to]){
-                communityLockTokenAmount [to] = communityLockTokenAmount[to] + amount;
+                _communityLockTokenAmount [to] = _communityLockTokenAmount[to] + amount;
                 communityLockState = true;
         }
         
         
         
-        if(block.timestamp > communityLockFromTime && block.timestamp < communityUnLockTime && communityLockTokenAmount [from] > 0 ){
-            require(balanceOf(from) - amount > communityLockTokenAmount[from],"Token is locked");
+        if(block.timestamp > communityLockFromTime && block.timestamp < communityUnLockTime && _communityLockTokenAmount [from] > 0 ){
+            require(balanceOf(from) - amount > _communityLockTokenAmount[from],"Token is locked");
             _tokenTransfer(from, to, amount, takeFee);
         }
         
@@ -1567,7 +1567,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     
     
     function _minting(uint8 time) public onlyOwner{
-        require(mintpara[time].fromTime<block.timestamp&&block.timestamp<mintpara[time].toTime,"it is not minttime");
+        require(mintpara[time].fromTime<block.timestamp);
         require(mintpara[time].state == false);
         _mint(_mainAddress, 10**18*mintpara[time].mintPercent);
         _tokenTransfer(_mainAddress, _founderAddress, 10**18*mintpara[time].secondPercent, false);
