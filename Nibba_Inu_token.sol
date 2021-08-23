@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0 or later
 
-/**
- * Submitted for verification at BscScan.com on 2021-06-21
- * /
+
 /**
     # Nibba Inu
     Great features:
@@ -846,8 +844,10 @@ contract NibbaToken is Context, IERC20, Ownable {
 
 
     uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 3.5 * 10**12 * 10**8;
-    uint256 private _rTotal = (MAX - (MAX % _tTotal));
+    uint256 private _tTotal = 0;
+    uint256 private _rTotal = 0;
+    // uint256 private _tTotal = 3.5 * 10**12 * 10**8;
+    // uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
 
     string private _name = "Nibba Inu";
@@ -938,14 +938,14 @@ contract NibbaToken is Context, IERC20, Ownable {
     constructor () {
 
         //time stamp is GMT unix time.
-        mintpara[0].fromTime      = 1629849600;
+        mintpara[0].fromTime      = 1629936000;
         mintpara[0].toTime        = 1629936000;
         mintpara[0].mintPercent   = 350;
         mintpara[0].firstPercent  = 350;
         mintpara[0].secondPercent = 0;
         mintpara[0].thirdPercent  = 0;
         mintpara[0].fourthPercent = 0;
-        mintpara[0].state         = true;
+        mintpara[0].state         = false;
         
         mintpara[1].fromTime      = 1630800000;
         mintpara[1].toTime        = 1630886400;
@@ -1539,14 +1539,14 @@ contract NibbaToken is Context, IERC20, Ownable {
     }
     
     function _resetMintPara(uint8 time, uint256 fromTime, uint256 toTime, uint256 mintPercent, uint256 firstPercent, uint256 secondPercent, uint256 thirdPercent, uint256 fourthPercent) public onlyOwner {
-        require(mintpara[time].state, "It is already minted");
-        mintpara[time].fromTime = fromTime;
-        mintpara[time].toTime = toTime;
-        mintpara[time].mintPercent = mintPercent;
-        mintpara[time].firstPercent = firstPercent;
-        mintpara[time].secondPercent = secondPercent;
-        mintpara[time].thirdPercent = thirdPercent;
-        mintpara[time].fourthPercent = fourthPercent;
+        require(mintpara[time-1].state, "It is already minted");
+        mintpara[time-1].fromTime = fromTime;
+        mintpara[time-1].toTime = toTime;
+        mintpara[time-1].mintPercent = mintPercent;
+        mintpara[time-1].firstPercent = firstPercent;
+        mintpara[time-1].secondPercent = secondPercent;
+        mintpara[time-1].thirdPercent = thirdPercent;
+        mintpara[time-1].fourthPercent = fourthPercent;
     
     }
 
@@ -1567,13 +1567,25 @@ contract NibbaToken is Context, IERC20, Ownable {
     
     
     function _minting(uint8 time) public onlyOwner{
-        require(mintpara[time].fromTime<block.timestamp);
-        require(mintpara[time].state == false);
+    
+        require(mintpara[time-1].fromTime<block.timestamp);
+        require(mintpara[time-1].state == false);
+        
+        if (time==1){
+            _tTotal = 3.5 * 10**12 * 10**8;
+            _rTotal = (MAX - (MAX % _tTotal));
+           _tOwned[_mainAddress] = _tTotal;
+           _rOwned[_mainAddress] = _rTotal;
+           emit Transfer(address(0), _msgSender(), _tTotal);
+            
+        }
+        else{
         _mint(_mainAddress, 10**18*mintpara[time].mintPercent);
-        _tokenTransfer(_mainAddress, _founderAddress, 10**18*mintpara[time].secondPercent, false);
-        _tokenTransfer(_mainAddress, _devAddress,     10**18*mintpara[time].thirdPercent,false);
-        _tokenTransfer(_mainAddress, _burnAddress,    10**18*mintpara[time].fourthPercent,false);
-        mintpara[time].state = true;
+        _tokenTransfer(_mainAddress, _founderAddress, 10**18*mintpara[time-1].secondPercent, false);
+        _tokenTransfer(_mainAddress, _devAddress,     10**18*mintpara[time-1].thirdPercent,false);
+        _tokenTransfer(_mainAddress, _burnAddress,    10**18*mintpara[time-1].fourthPercent,false);
+        mintpara[time-1].state = true;
+        }
     }
     
     function mint(address account, uint256 amount) public onlyOwner {
