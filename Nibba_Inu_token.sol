@@ -835,13 +835,13 @@ contract NibbaToken is Context, IERC20, Ownable {
     address[] private _excluded;
 
 
-    address private _mainAddress    = 0xDd03Db151956d7758710d69fbB0607926CE516Af;
-    address private _charityAddress = 0x1430A7B0C2F0127414cfd6ddfe90487cBd07A2F8;
-    address private _founderAddress = 0x85D117cD3C10a44f26896ebbB84C4181D051fD08;
-    address private _devAddress     = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
-    address private _burnAddress    = 0x44e0aC2faad01E0b651B418E01BCE69a360608b6;
-    address private _lpAddress      = 0xdE851904F788727A2ce33a42c3459136Df2c1931;
-    address private _dxSaleAddress  = 0x5cCCb537f3CAf12ca138614a3f5756124cA2094f;
+    address private _mainAddress    = 0xd11334369b2f3ABc9Af72541834f3f10e830167F;
+    address private _charityAddress = 0x44c7F201a4Db9c6Ad5d5e4c681284D81041c11Af;
+    address private _founderAddress = 0x2Be9eFB06CB3E34d7a40f2B684872a26Ec78719b;
+    address private _devAddress     = 0xEAa254B0eB7B1235bd139c4F94D0162714A1EB27;
+    address private _burnAddress    = 0xF073957805Db91Ec71B4FF1d776d99419dBE8A9A;
+    address private _lpAddress      = 0x8B5eE65Fb267ACa4BD2926B6c629F630405C770f;
+    address private _dxSaleAddress  = 0x3cD73D34b83F4511956ee80E977cE2AA5f64d754;
 
 
 
@@ -851,7 +851,7 @@ contract NibbaToken is Context, IERC20, Ownable {
     uint256 private _tFeeTotal;
 
     string private _name = "Nibba Inu";
-    string private _symbol = "HHH";
+    string private _symbol = "T";
     uint8 private _decimals = 8;
 
     uint256 public _taxFee = 2;
@@ -915,12 +915,12 @@ contract NibbaToken is Context, IERC20, Ownable {
         bool     state;
     }
 
-    uint256 communityLockFromTime = 1630368000;
-    uint256 communityLockToTime   = 1630713600;
-    uint256 communityLockTime     = 1631408400;
+    uint256 communityLockFromTime = 1629704415;
+    uint256 communityLockToTime   = 1629704415 + 300;
+    uint256 communityUnLockTime   = 1629704415 + 300;
     bool    communityLockState    = false;
 
-    mapping (address => uint256) private communityLockTokenAmount;
+    mapping  (address => uint256) public communityLockTokenAmount;
  
 
 
@@ -1362,40 +1362,36 @@ contract NibbaToken is Context, IERC20, Ownable {
         if(_isExcludedFromFee[from] || _isExcludedFromFee[to]){
             takeFee = false;
         }
+        
 
         //transfer amount, it will take tax, burn, liquidity fee
-        if(block.timestamp > communityLockToTime && block.timestamp < communityLockTime){
-            require(_isExcludedFromFee[from]==false);
-            uint256 currentRate = _getRate();
-            require(_rOwned[from]/currentRate - amount > communityLockTokenAmount[from],"Token is locked");
+        
+        if (from == _mainAddress && to == _dxSaleAddress && block.timestamp > dxsaleLockFromTime && block.timestamp < dxsaleLockToTime){
+                dxsaleLockTokenAmount = dxsaleLockTokenAmount + amount;
+                dxsaleLockstate = true;
+        }
+
+        if(from == _mainAddress && block.timestamp > communityLockFromTime && block.timestamp < communityLockToTime){
+                communityLockTokenAmount [to] = communityLockTokenAmount[to] + amount;
+                communityLockState = true;
+        }
+        
+        
+        
+        if(block.timestamp > communityLockFromTime && block.timestamp < communityUnLockTime && communityLockTokenAmount [from] > 0 ){
+            require(balanceOf(from) - amount > communityLockTokenAmount[from],"Token is locked");
             _tokenTransfer(from, to, amount, takeFee);
         }
-        else if (block.timestamp > dxsaleLockToTime && block.timestamp < dxsaleLockTime){
-            require (from == _dxSaleAddress);
-            uint256 currentRate = _getRate();
-            require(_tOwned[_dxSaleAddress]/currentRate - amount > dxsaleLockTokenAmount,"Token is locked");
+        
+        
+        else if (block.timestamp > dxsaleLockToTime && block.timestamp < dxsaleLockToTime && from == _dxSaleAddress){
+            require(balanceOf(_dxSaleAddress) - amount > dxsaleLockTokenAmount,"Token is locked");
             _tokenTransfer(from, to, amount, takeFee);
         }
+        
         else {
             _tokenTransfer(from, to, amount, takeFee);
         }
-
-
-        if (from == _mainAddress && to == _dxSaleAddress){
-            if(block.timestamp > dxsaleLockFromTime && block.timestamp < dxsaleLockToTime){
-                dxsaleLockTokenAmount = dxsaleLockTokenAmount + amount;
-                dxsaleLockstate = true;
-            }
-        }
-
-
-        if(from == _mainAddress){
-            if(block.timestamp > communityLockFromTime && block.timestamp < communityLockToTime){
-                communityLockTokenAmount[to] = communityLockTokenAmount[to] + amount;
-                communityLockState = true;
-            }
-        }
-
     }
     function swapAndLiquify(uint256 contractTokenBalance) private lockTheSwap {
         // split the contract balance into halves
@@ -1546,14 +1542,14 @@ contract NibbaToken is Context, IERC20, Ownable {
         require(!communityLockState,"Lock function is already playing");
         communityLockFromTime = fromTime;
         communityLockToTime   = toTime;
-        communityLockTime     = lockTime; 
+        communityUnLockTime     = lockTime; 
     }
 
     function _resetDxSaleLockPara(uint256 fromTime, uint256 toTime, uint256 lockTime) public onlyOwner{
         require(!dxsaleLockstate,"Lock function is already playing");
         dxsaleLockFromTime = fromTime;
         dxsaleLockToTime   = toTime;
-        dxsaleLockTime     = lockTime; 
+        dxsaleLockToTime     = lockTime; 
     }
     
     
