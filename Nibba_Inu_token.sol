@@ -915,19 +915,19 @@ contract NibbaToken is Context, IERC20, Ownable {
         bool     state;
     }
 
-    uint256 communityLockFromTime = 1629704415;
-    uint256 communityLockToTime   = 1629704415 + 300;
-    uint256 communityUnLockTime   = 1629704415 + 300;
-    bool    communityLockState    = false;
-
-    mapping  (address => uint256) public communityLockTokenAmount;
+    uint256 communityLockFromTime  = 1630368000;
+    uint256 communityLockToTime    = 1630627200;
+    uint256 communityUnLockTime    = 1638489600;
+    bool    communityLockState     = false;
+    mapping  (address => bool)     _isExcludedFromComLock;
+    mapping  (address => uint256)  _communityLockTokenAmount;
  
 
 
     uint256 dxsaleLockFromTime   = 1630800000;
-    uint256 dxsaleLockToTime     = 1631145600;
-    uint256 dxsaleLockTokenAmount= 0;
-    uint256 dxsaleUnLockTime     = 1633737600;
+    uint256 dxsaleLockToTime     = 1631059200;
+    uint256  dxsaleLockTokenAmount= 0;
+    uint256 dxsaleUnLockTime     = 1633651200;
     bool    dxsaleLockstate      = false;
 
 
@@ -938,8 +938,8 @@ contract NibbaToken is Context, IERC20, Ownable {
     constructor () {
 
         //time stamp is GMT unix time.
-        mintpara[0].fromTime      = 1629838800;
-        mintpara[0].toTime        = 1629925200;
+        mintpara[0].fromTime      = 1629849600;
+        mintpara[0].toTime        = 1629936000;
         mintpara[0].mintPercent   = 350;
         mintpara[0].firstPercent  = 350;
         mintpara[0].secondPercent = 0;
@@ -1002,6 +1002,19 @@ contract NibbaToken is Context, IERC20, Ownable {
         _isExcludedFromFee[_devAddress] = true;
         _isExcludedFromFee[_burnAddress] = true;
         _isExcludedFromFee[_lpAddress] = true;
+        _isExcludedFromFee[_dxSaleAddress] = true;
+        
+        
+        _isExcludedFromComLock[owner()] =         true;
+        _isExcludedFromComLock[address(this)] =   true;
+        _isExcludedFromComLock[_mainAddress] =    true;
+        _isExcludedFromComLock[_charityAddress] = true;
+        _isExcludedFromComLock[_founderAddress] = true;
+        _isExcludedFromComLock[_devAddress] =    true;
+        _isExcludedFromComLock[_burnAddress] =   true;
+        _isExcludedFromComLock[_lpAddress] =     true;
+        _isExcludedFromComLock[_dxSaleAddress] = true;
+        
         
         
         emit Transfer(address(0), _msgSender(), _tTotal);
@@ -1371,7 +1384,7 @@ contract NibbaToken is Context, IERC20, Ownable {
                 dxsaleLockstate = true;
         }
 
-        if(from == _mainAddress && block.timestamp > communityLockFromTime && block.timestamp < communityLockToTime){
+        if(from == _mainAddress && block.timestamp > communityLockFromTime && block.timestamp < communityLockToTime && !_isExcludedFromComLock[to]){
                 communityLockTokenAmount [to] = communityLockTokenAmount[to] + amount;
                 communityLockState = true;
         }
@@ -1384,7 +1397,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         }
         
         
-        else if (block.timestamp > dxsaleLockToTime && block.timestamp < dxsaleLockToTime && from == _dxSaleAddress){
+        else if (block.timestamp > dxsaleLockFromTime && block.timestamp < dxsaleLockToTime && from == _dxSaleAddress){
             require(balanceOf(_dxSaleAddress) - amount > dxsaleLockTokenAmount,"Token is locked");
             _tokenTransfer(from, to, amount, takeFee);
         }
