@@ -7,11 +7,8 @@
     2% fee For automatic Liquidity on PancakeSwap
     2% fee automatically distribute to all holders
     2% fee autofundmatically move to charity wallet 
-    When sell token:
-    2% fee auto burn
-    
-    When buy token:
-    2% fee automatically move to donation wallet.
+    2% burn every transactons
+   
     
     Owner Wallet 1 – Main wallet. Airdrops, DxSale, etc from this wallet
     Owner Wallet 2 – Founder’s wallet
