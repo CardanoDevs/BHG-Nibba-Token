@@ -1185,7 +1185,7 @@ contract NibbaToken is Context, IERC20, Ownable {
 
     function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256) {
         (Fees memory fees) = _getTValues(tAmount);
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, fees.tFee, fees.tCharity, fees.tLiquidity, fees.tBurn, _getRate());
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, fees.tFee, fees.tCharity, fees.tLiquidity,  _getRate());
         return (rAmount, rTransferAmount, rFee, fees.tTransferAmount, fees.tFee, fees.tCharity, fees.tLiquidity, fees.tBurn);
     }
 
@@ -1202,12 +1202,12 @@ contract NibbaToken is Context, IERC20, Ownable {
     }
 
 
-    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 tBurn, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
+    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tCharity, uint256 tLiquidity, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
         uint256 rAmount = tAmount.mul(currentRate);
         uint256 rFee = tFee.mul(currentRate);
         uint256 rCharity = tCharity.mul(currentRate);
         uint256 rLiquidity = tLiquidity.mul(currentRate);
-        uint256 rBurn = tBurn.mul(currentRate);
+        
         uint256 rTransferAmount = rAmount.sub(rFee).sub(rCharity).sub(rLiquidity);
         return (rAmount, rTransferAmount, rFee);
     }
@@ -1511,7 +1511,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         _takeLiquidity(tLiquidity);
         _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
-        uint256 currentRate = _getRate();
+       
 
 
 
