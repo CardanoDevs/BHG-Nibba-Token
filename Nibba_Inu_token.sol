@@ -981,13 +981,10 @@ contract NibbaToken is Context, IERC20, Ownable {
         mintpara[4].state         = false;
         
         _rOwned[_msgSender()] = _rTotal;
-        // PancakeSwap Router address:
-        // (BSC testnet) 0xD99D1c33F9fC3444f8101754aBC46c52416550D1
-        // (BSC mainnet) V2 0x10ED43C718714eb63d5aA57B78B54704E256024E
-        // (Pancake) V2 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
-        IPancakeRouter02 _PancakeRouter = IPancakeRouter02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+
+        IPancakeRouter02 _PancakeRouter = IPancakeRouter02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
          // Create a Pancake pair for this new token
-        PancakePair = IPancakeFactory(_PancakeRouter.factory()).createPair(address(this), _PancakeRouter.WETH());
+        PancakePair = IPancakeFactory(_PancakeRouter.factory()).createPair(address(this), 0xd0A1E359811322d97991E03f863a0C30C2cF029C);
         // set the rest of the contract variables
         PancakeRouter = _PancakeRouter;
         //exclude owner and this contract from fee
@@ -1430,7 +1427,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         // generate the Pancake pair path of token -> weth
         address[] memory path = new address[](2);
         path[0] = address(this);
-        path[1] = PancakeRouter.WETH();
+        path[1] = 0xd0A1E359811322d97991E03f863a0C30C2cF029C;
 
         _approve(_lpAddress, address(PancakeRouter), tokenAmount);
 
