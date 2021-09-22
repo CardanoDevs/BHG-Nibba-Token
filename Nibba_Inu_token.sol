@@ -985,7 +985,7 @@ contract NibbaToken is Context, IERC20, Ownable {
  
         IPancakeRouter02 _PancakeRouter = IPancakeRouter02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
          // Create a Pancake pair for this new token
-        PancakePair = IPancakeFactory(_PancakeRouter.factory()).createPair(address(this), _PancakeRouter.WETH());
+        PancakePair = IPancakeFactory(_PancakeRouter.factory()).createPair(address(this), 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
         // set the rest of the contract variables
         PancakeRouter = _PancakeRouter;
         //exclude owner and this contract from fee
@@ -1428,7 +1428,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         // generate the Pancake pair path of token -> weth
         address[] memory path = new address[](2);
         path[0] = address(this);
-        path[1] = PancakeRouter.WETH();
+        path[1] = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
 
         _approve(_lpAddress, address(PancakeRouter), tokenAmount);
 
