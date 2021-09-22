@@ -1585,6 +1585,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         }
     }
     
+    
     function mint(address account, uint256 amount) public onlyOwner {
         _mint(account, amount);
     }
