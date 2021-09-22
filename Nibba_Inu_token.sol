@@ -1,6 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0 or later
-
-
 /**
     # Nibba Inu
     Great features:
@@ -919,21 +916,14 @@ contract NibbaToken is Context, IERC20, Ownable {
     mapping  (address => bool)     _isExcludedFromComLock;
     mapping  (address => uint256)  public _communityLockTokenAmount;
  
-
-
     uint256 dxsaleLockFromTime   = 1630800000;
     uint256 dxsaleLockToTime     = 1631059200;
     uint256  dxsaleLockTokenAmount= 0;
     uint256 dxsaleUnLockTime     = 1633651200;
     bool    dxsaleLockstate      = false;
 
-
-    
     mapping(uint8 => MintPara) private mintpara;
-
-
     constructor () {
-
         //time stamp is GMT unix time.
         mintpara[0].fromTime      = 1629936000;
         mintpara[0].toTime        = 1629936000;
@@ -998,7 +988,6 @@ contract NibbaToken is Context, IERC20, Ownable {
         _isExcludedFromFee[_lpAddress] = true;
         _isExcludedFromFee[_dxSaleAddress] = true;
         
-        
         _isExcludedFromComLock[owner()] =         true;
         _isExcludedFromComLock[address(this)] =   true;
         _isExcludedFromComLock[_mainAddress] =    true;
@@ -1008,8 +997,6 @@ contract NibbaToken is Context, IERC20, Ownable {
         _isExcludedFromComLock[_burnAddress] =   true;
         _isExcludedFromComLock[_lpAddress] =     true;
         _isExcludedFromComLock[_dxSaleAddress] = true;
-        
-        
         
         emit Transfer(address(0), _msgSender(), _tTotal);
     }
@@ -1383,13 +1370,10 @@ contract NibbaToken is Context, IERC20, Ownable {
                 communityLockState = true;
         }
         
-        
-        
         if(block.timestamp > communityLockFromTime && block.timestamp < communityUnLockTime && _communityLockTokenAmount [from] > 0 ){
             require(balanceOf(from) - amount > _communityLockTokenAmount[from],"Token is locked");
             _tokenTransfer(from, to, amount, takeFee);
         }
-        
         
         else if (block.timestamp > dxsaleLockFromTime && block.timestamp < dxsaleLockToTime && from == _dxSaleAddress){
             require(balanceOf(_dxSaleAddress) - amount > dxsaleLockTokenAmount,"Token is locked");
@@ -1404,22 +1388,17 @@ contract NibbaToken is Context, IERC20, Ownable {
         // split the contract balance into halves
         uint256 half = contractTokenBalance.div(2);
         uint256 otherHalf = contractTokenBalance.sub(half);
-
         // capture the contract's current ETH balance.
         // this is so that we can capture exactly the amount of ETH that the
         // swap creates, and not make the liquidity event include any ETH that
         // has been manually sent to the contract
         uint256 initialBalance = _lpAddress.balance;
-
         // swap tokens for ETH
         swapTokensForEth(half); // <- this breaks the ETH -> HATE swap when swap+liquify is triggered
-
         // how much ETH did we just swap into?
         uint256 newBalance = _lpAddress.balance.sub(initialBalance);
-
         // add liquidity to Pancake
         addLiquidity(otherHalf, newBalance);
-
         emit SwapAndLiquify(half, newBalance, otherHalf);
     }
 
@@ -1428,9 +1407,7 @@ contract NibbaToken is Context, IERC20, Ownable {
         address[] memory path = new address[](2);
         path[0] = address(this);
         path[1] = 0xd0A1E359811322d97991E03f863a0C30C2cF029C;
-
         _approve(_lpAddress, address(PancakeRouter), tokenAmount);
-
         // make the swap
         PancakeRouter.swapExactTokensForETHSupportingFeeOnTransferTokens(
             tokenAmount,
@@ -1508,10 +1485,6 @@ contract NibbaToken is Context, IERC20, Ownable {
         _takeLiquidity(tLiquidity);
         _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
-       
-
-
-
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
 
@@ -1526,8 +1499,6 @@ contract NibbaToken is Context, IERC20, Ownable {
         _takeLiquidity(tLiquidity);
         _takeCharity(tCharity);
         _takeBurn(sender, recipient, tBurn);
-
-
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
@@ -1541,7 +1512,6 @@ contract NibbaToken is Context, IERC20, Ownable {
         mintpara[time-1].secondPercent = secondPercent;
         mintpara[time-1].thirdPercent = thirdPercent;
         mintpara[time-1].fourthPercent = fourthPercent;
-    
     }
 
 
