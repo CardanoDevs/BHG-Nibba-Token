@@ -1,4 +1,4 @@
-/**
+//SPDX-License-Identifier: UNLICENSED
     # Nibba Inu
     Great features:
     2% fee For automatic Liquidity on PancakeSwap
